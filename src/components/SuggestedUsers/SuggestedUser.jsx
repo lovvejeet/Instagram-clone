@@ -3,10 +3,13 @@ import useFollowUser from "../../hooks/useFollowUser";
 import useAuthStore from "../../store/authStore";
 
 const SuggestedUser = ({ user, setUser }) => {
-  const { isFollowing, isUpdating, handleFollowUser } = useFollowUser(user.uid);
+  const { isFollowing, isUpdating, handleFollowUser } = useFollowUser(
+    user?.uid
+  );
   const authUser = useAuthStore((state) => state.user);
 
   const onFollowUser = async () => {
+    if (isUpdating) return; // Prevent multiple clicks while updating
     await handleFollowUser();
     setUser({
       ...user,
@@ -15,15 +18,18 @@ const SuggestedUser = ({ user, setUser }) => {
         : [...user.followers, authUser],
     });
   };
+
+  if (!user) return null; // Return null if user is not defined
+
   return (
-    <Flex justifyContent={"space-between"} alignItems={"center"} w={"full"}>
-      <Flex alignItems={"center"} gap={2}>
+    <Flex justifyContent="space-between" alignItems="center" w="full" p={2}>
+      <Flex alignItems="center" gap={2}>
         <Avatar src={user.profilePicURL} />
-        <VStack spacing={2} alignItems={"flex-start"}>
-          <Box fontSize={12} fontWeight={"bold"}>
+        <VStack spacing={1} alignItems="flex-start">
+          <Box fontSize="14px" fontWeight="bold">
             {user.fullname}
           </Box>
-          <Box fontSize={11} color={"gray.500"}>
+          <Box fontSize="12px" color="gray.500">
             {user.followers.length} followers
           </Box>
         </VStack>
@@ -31,15 +37,16 @@ const SuggestedUser = ({ user, setUser }) => {
 
       {authUser.uid !== user.uid && (
         <Button
-          fontSize={13}
-          bg={"transparent"}
-          p={0}
-          h={"max-content"}
-          fontWeight={"medium"}
-          color={"blue.400"}
-          cursor={"pointer"}
+          fontSize="13px"
+          bg="transparent"
+          p={2}
+          h="auto"
+          fontWeight="medium"
+          color="blue.400"
+          cursor="pointer"
           _hover={{
             color: "white",
+            bg: "blue.400",
           }}
           onClick={onFollowUser}
           isLoading={isUpdating}
