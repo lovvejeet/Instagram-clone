@@ -19,13 +19,14 @@ const GoogleAuth = ({ prefix }) => {
       }
       const userRef = doc(firestore, "users", newUser.user.uid);
       const userSnap = await getDoc(userRef);
+
       if (userSnap.exists()) {
-        //if user is login with google
-        const userDoc = userSnap.date();
+        // login
+        const userDoc = userSnap.data();
         localStorage.setItem("user-info", JSON.stringify(userDoc));
         loginUser(userDoc);
       } else {
-        //if user is new user or new user or sign up
+        // signup
         const userDoc = {
           uid: newUser.user.uid,
           email: newUser.user.email,
@@ -38,10 +39,7 @@ const GoogleAuth = ({ prefix }) => {
           posts: [],
           createdAt: Date.now(),
         };
-
         await setDoc(doc(firestore, "users", newUser.user.uid), userDoc);
-
-        // Store user data in local storage (consider using tokens instead)
         localStorage.setItem("user-info", JSON.stringify(userDoc));
         loginUser(userDoc);
       }
@@ -58,8 +56,8 @@ const GoogleAuth = ({ prefix }) => {
       onClick={handleGoogleAuth}
     >
       <Image src="/google.png" w={5} alt="Google logo" />
-      <Text mx={2} color={"blue.500"}>
-        {prefix} in with Google
+      <Text mx="2" color={"blue.500"}>
+        {prefix} with Google
       </Text>
     </Flex>
   );
