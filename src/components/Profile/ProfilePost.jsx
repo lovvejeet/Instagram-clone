@@ -19,10 +19,48 @@ import { FaComment } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
 import PostFooter from "./../FeedPosts/PostFooter";
 import Comment from "../Comment/Comment";
+import useAuthStore from "../../store/authStore";
+import useUserProfileStore from "../../store/userProfileStore";
+import { deleteObject, ref } from "firebase/storage";
+import { firestore, storage } from "../../firebase/firebase";
+import { arrayRemove, deleteDoc, doc, updateDoc } from "firebase/firestore";
+import usePostStore from "../../store/postStore";
+import useShowToast from "../../hooks/useShowToast";
+import { useState } from "react";
+import Caption from "../Comment/Caption";
 
-const ProfilePost = ({ img }) => {
+const ProfilePost = ({ post }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const userProfile = useUserProfileStore((state) => state.userProfile);
+  const authUser = useAuthStore((state) => state.user);
+  const deletePost = usePostStore((state) => state.deletePost);
+  const showToast = useShowToast();
+  const [isDeleting, setIsDeleting] = useState(false);
+  const decrementPostsCount = useUserProfileStore((state) => state.deletePost);
 
+  const handleDeletePost = async () => {
+    if (!window.confirm("Are you sure you want to delete this post?")) return;
+    if (isDeleting) return;
+
+    try {
+      const imageRef = ref(storage, `posts/${post.id}`);
+      await deleteObject(imageRef);
+      const userRef = doc(firestore, "users", authUser.uid);
+      await deleteDoc(doc(firestore, "posts", post.id));
+
+      await updateDoc(userRef, {
+        posts: arrayRemove(post.id),
+      });
+
+      deletePost(post.id);
+      decrementPostsCount(post.id);
+      showToast("Success", "Post deleted successfully", "success");
+    } catch (error) {
+      showToast("Error", error.message, "error");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
   return (
     <>
       <GridItem
@@ -52,21 +90,21 @@ const ProfilePost = ({ img }) => {
             <Flex>
               <AiFillHeart size={20} />
               <Text fontWeight={"bold"} ml={2}>
-                1M
+                {post.likes.length}
               </Text>
             </Flex>
 
             <Flex>
               <FaComment size={20} />
               <Text fontWeight={"bold"} ml={2}>
-                500k
+                {post.comments.length}
               </Text>
             </Flex>
           </Flex>
         </Flex>
 
         <Image
-          src={img}
+          src={post.imageURL}
           alt="profile post"
           w={"100%"}
           h={"100%"}
@@ -100,7 +138,7 @@ const ProfilePost = ({ img }) => {
                 justifyContent={"center"}
                 alignItems={"center"}
               >
-                <Image src={img} alt="profile post" />
+                <Image src={post.imageURL} alt="profile post" />
               </Flex>
               <Flex
                 flex={1}
@@ -111,27 +149,27 @@ const ProfilePost = ({ img }) => {
                 <Flex alignItems={"center"} justifyContent={"space-between"}>
                   <Flex alignItems={"center"} gap={4}>
                     <Avatar
-                      src="/profilepic.png"
+                      src={userProfile.profilePicURL}
                       size={"sm"}
                       name="lovvejeet"
                     />
                     <Text fontWeight={"bold"} fontSize={12}>
-                      lovvejeet
+                      {userProfile.username}
                     </Text>
                   </Flex>
-                  {/* {authUser?.uid === userProfile.uid && ( */}
-                  <Button
-                    size={"sm"}
-                    bg={"transparent"}
-                    _hover={{ bg: "whiteAlpha.300", color: "red.600" }}
-                    borderRadius={4}
-                    p={1}
-                    // onClick={handleDeletePost}
-                    // isLoading={isDeleting}
-                  >
-                    <MdDelete size={20} cursor="pointer" />
-                  </Button>
-                  {/* )} */}
+                  {authUser?.uid === userProfile.uid && (
+                    <Button
+                      size={"sm"}
+                      bg={"transparent"}
+                      _hover={{ bg: "whiteAlpha.300", color: "red.600" }}
+                      borderRadius={4}
+                      p={1}
+                      onClick={handleDeletePost}
+                      isLoading={isDeleting}
+                    >
+                      <MdDelete size={20} cursor="pointer" />
+                    </Button>
+                  )}
                 </Flex>
                 <Divider my={4} bg={"gray.500"} />
 
@@ -141,28 +179,16 @@ const ProfilePost = ({ img }) => {
                   maxH={"350px"}
                   overflowY={"auto"}
                 >
-                  <Comment
-                    createdAt="1d ago "
-                    username="lovvejeet"
-                    profilePic="/profilepic.png"
-                    text="dummy images from unsplash"
-                  />
-                  <Comment
-                    createdAt="1d ago "
-                    username="lovvejeet"
-                    profilePic="/profilepic.png"
-                    text="dummy images from unsplash"
-                  />
-                  <Comment
-                    createdAt="1d ago "
-                    username="lovvejeet"
-                    profilePic="/profilepic.png"
-                    text="dummy images from unsplash"
-                  />
+                  {/* CAPTION */}
+                  {post.caption && <Caption post={post} />}
+                  {/* COMMENTS */}
+                  {post.comments.map((comment) => (
+                    <Comment key={comment.id} comment={comment} />
+                  ))}
                 </VStack>
                 <Divider my={4} bg={"gray.800"} />
 
-                <PostFooter isProfilePage={true} />
+                <PostFooter isProfilePage={true} post={post} />
               </Flex>
             </Flex>
           </ModalBody>
