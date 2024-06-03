@@ -8,7 +8,7 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 const GoogleAuth = ({ prefix }) => {
   const [signInWithGoogle, , , error] = useSignInWithGoogle(auth);
   const showToast = useShowToast();
-  const loginUser = useAuthStore((state) => state.loginUser);
+  const loginUser = useAuthStore((state) => state.login);
 
   const handleGoogleAuth = async () => {
     try {
