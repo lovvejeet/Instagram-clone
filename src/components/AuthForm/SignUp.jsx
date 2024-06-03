@@ -43,7 +43,7 @@ const Signup = () => {
         fontSize={14}
         type="text"
         size={"sm"}
-        value={inputs.fullName}
+        value={inputs.fullname}
         onChange={(e) => setInputs({ ...inputs, fullname: e.target.value })}
       />
       <InputGroup>
