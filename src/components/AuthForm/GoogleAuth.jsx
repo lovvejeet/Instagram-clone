@@ -13,6 +13,7 @@ const GoogleAuth = ({ prefix }) => {
   const handleGoogleAuth = async () => {
     try {
       const newUser = await signInWithGoogle();
+
       if (!newUser && error) {
         showToast("Error", error.message, "error");
         return;
