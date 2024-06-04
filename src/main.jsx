@@ -1,35 +1,42 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { ChakraProvider } from "@chakra-ui/react";
-import { extendTheme } from "@chakra-ui/react";
-import { mode } from "@chakra-ui/theme-tools";
-
 import App from "./App.jsx";
 import "./index.css";
+import { ChakraProvider } from "@chakra-ui/react";
+import { mode } from "@chakra-ui/theme-tools";
+import { extendTheme } from "@chakra-ui/theme-utils";
+import { ColorModeScript } from "@chakra-ui/color-mode";
 import { BrowserRouter } from "react-router-dom";
 
 const styles = {
-  global: (props) => {
-    return {
-      body: {
-        bg: mode("gray.100", "#000")(props),
-        color: mode("gray.800", "whiteAlpha.900")(props),
-      },
-    };
-  },
+  global: (props) => ({
+    body: {
+      color: mode("gray.800", "whiteAlpha.900")(props),
+      bg: mode("gray.100", "#101010")(props),
+    },
+  }),
 };
 
 const config = {
   initialColorMode: "dark",
-  useSystemColorMode: false,
+  useSystemColorMode: true,
 };
 
-const theme = extendTheme({ config, styles });
+const colors = {
+  gray: {
+    light: "#616161",
+    dark: "#1e1e1e",
+  },
+};
+
+const theme = extendTheme({ config, styles, colors });
 
 ReactDOM.createRoot(document.getElementById("root")).render(
+  // React.StrictMode renders every component twice (in the initial render), only in development.
   <React.StrictMode>
     <BrowserRouter>
       <ChakraProvider theme={theme}>
+        <ColorModeScript initialColorMode={theme.config.initialColorMode} />
         <App />
       </ChakraProvider>
     </BrowserRouter>
