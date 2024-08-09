@@ -17,24 +17,19 @@ const CommentsModal = ({ isOpen, onClose, post }) => {
   const { handlePostComment, isCommenting } = usePostComment();
   const commentRef = useRef(null);
   const commentsContainerRef = useRef(null);
+
   const handleSubmitComment = async (e) => {
-    // do not refresh the page, prevent it
     e.preventDefault();
     await handlePostComment(post.id, commentRef.current.value);
     commentRef.current.value = "";
   };
 
   useEffect(() => {
-    const scrollToBottom = () => {
+    if (isOpen && commentsContainerRef.current) {
       commentsContainerRef.current.scrollTop =
         commentsContainerRef.current.scrollHeight;
-    };
-    if (isOpen) {
-      setTimeout(() => {
-        scrollToBottom();
-      }, 100);
     }
-  }, [isOpen, post.comments.length]);
+  }, [isOpen, post.comments.length]); // track isOpen and comment length
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} motionPreset="slideInLeft">
