@@ -7,6 +7,15 @@ const Comment = ({ comment }) => {
   const { userProfile, isLoading } = useGetUserProfileById(comment.createdBy);
 
   if (isLoading) return <CommentSkeleton />;
+
+  if (!userProfile) {
+    return (
+      <Flex direction="column" p={4}>
+        <Text>User not found</Text>
+      </Flex>
+    );
+  }
+
   return (
     <Flex gap={4}>
       <Link to={`/${userProfile.username}`}>
